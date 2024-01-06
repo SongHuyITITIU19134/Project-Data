@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lab 8</title>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="https://d3js.org/topojson.v1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.2.2/d3.min.js"></script>
+    <style>
+        .population:hover {
+            fill: purple;
+        }
+        
+        #tooltip {
+            width: auto;
+            height: auto;
+            background-color: black;
+            color: white;
+            position: absolute;
+            -webkit-border-radius: 10px;
+            -moz-border-radius: 10px;
+            border-radius: 10px;
+            visibility: hidden;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="intro">
+        <h1>Tran Long Gia Huy</h1>
+        <h2>ITITIU19131</h2>
+        <h3>Data Science and Data Visualization</h3>
+        <h3>Lab 8 - D3.js - Geomapping</h3>
+        <h4>This is my own work. I did not copy the code from any other source</h4>
+        <h3>Viet Nam Population</h3>
+        <a href="index.html">Viet Nam CoVID - 19</a>
+    </div>
+    <div id="tooltip">
+        <p><span id="value"></span></p>
+        <p><span id="value2"></span></p>
+    </div>
+    <div id="map"></div>
+    <script src="main2.js"></script>
+</body>
+
+</html>

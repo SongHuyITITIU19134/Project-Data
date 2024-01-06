@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>California wildfires - acres</title>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <style>
+        rect:hover {
+            fill: orangered
+        }
+        
+        #tool {
+            position: absolute;
+            width: auto;
+            height: auto;
+            padding: 10px;
+            background-color: white;
+            -webkit-border-radius: 10px;
+            -moz-border-radius: 10px;
+            border-radius: 10px;
+            pointer-events: none;
+        }
+        
+        #tool .hidden {
+            display: none;
+        }
+        
+        .active {
+            fill: blue;
+        }
+        
+        .brush .overlay {
+            pointer-events: all;
+            /* This is essential for the brush to work */
+        }
+    </style>
+</head>
+
+<body>
+    <button id="add">Add</button>
+    <button id="remove">Remove</button>
+    <button id="sort">Sort order</button>
+    <h2>No. of wildfires in US by Bar Chart</h2>
+    <div id="tool" class="hidden">
+        <p><strong>Information</strong></p>
+        <p><span id="value"></span></p>
+        <p><span id="value2"></span></p>
+        <p><span id="value3"></span></p>
+    </div>
+    <script src="main.js"></script>
+    <a href="index2.html">Acres burned</a>
+</body>
+
+</html>

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="https://d3js.org/topojson.v1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.2.2/d3.min.js"></script>
+    <style>
+        circle:hover {
+            fill: purple;
+        }
+        
+        .state {
+            stroke: black;
+            stroke-width: 1.5;
+        }
+        
+        .fire {
+            fill: lightcoral;
+        }
+        
+        #tooltip {
+            width: auto;
+            height: auto;
+            background-color: black;
+            color: white;
+            position: absolute;
+            -webkit-border-radius: 10px;
+            -moz-border-radius: 10px;
+            border-radius: 10px;
+            visibility: hidden;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="text">
+        <h1>Chorolepth of total fires size in USA 1992-2015</h1>
+    </div>
+    <a href="index.html">Location of wildfires</a>
+    <div id="map"></div>
+    <div id="tooltip" class="hidden">
+        <p><span id="value"></span></p>
+        <p><span id="value2"></span></p>
+    </div>
+    <script src="main2.js"></script>
+</body>
+
+</html>

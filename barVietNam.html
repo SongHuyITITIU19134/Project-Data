@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Yearly Average Counts</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+    <h1>Bar Data in Viet Nam </h1>
+    <h2>TREE COVER LOSS DUE TO FIRES IN VIETNAM
+        From 2001 to 2022</h2>
+    <div id="chart"></div>
+
+    <script>
+        d3.csv("viirs_fire_alerts__count.csv").then(function (data) {
+            const averageCountsByYear = d3.rollup(data, v => d3.mean(v, d => +d.alert__count), d => d.alert__year);
+
+            const years = Array.from(averageCountsByYear.keys());
+            const averageCounts = Array.from(averageCountsByYear.values());
+
+            const margin = { top: 20, right: 30, bottom: 30, left: 40 };
+            const width = 800 - margin.left - margin.right;
+            const height = 400 - margin.top - margin.bottom;
+
+            const svg = d3.select("#chart").append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+                .append("g")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+            const xScale = d3.scaleBand()
+                .domain(years)
+                .range([0, width])
+                .padding(0.1);
+
+            const yScale = d3.scaleLinear()
+                .domain([0, d3.max(averageCounts)])
+                .nice()
+                .range([height, 0]);
+
+            svg.selectAll("rect")
+                .data(averageCounts)
+                .enter()
+                .append("rect")
+                .attr("x", (d, i) => xScale(years[i]))
+                .attr("y", d => yScale(d))
+                .attr("width", xScale.bandwidth())
+                .attr("height", d => height - yScale(d))
+                .attr("fill", "steelblue");
+
+            svg.append("g")
+                .attr("transform", "translate(0," + height + ")")
+                .call(d3.axisBottom(xScale));
+
+            svg.append("g")
+                .call(d3.axisLeft(yScale));
+
+            svg.append("text")
+                .attr("x", width / 2)
+                .attr("y", height + margin.top + 20)
+                .attr("text-anchor", "middle")
+                .text("Year");
+
+            svg.append("text")
+                .attr("x", -margin.top)
+                .attr("y", -margin.left)
+                .attr("text-anchor", "middle")
+                .attr("transform", "rotate(-90)")
+                .text("Average Count");
+        });
+    </script>
+</body>
+</html>

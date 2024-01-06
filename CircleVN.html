@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Top Administrative Regions</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        #chart-container {
+            text-align: center;
+        }
+
+        #chart {
+            display: inline-block;
+        }
+
+        #transformButton {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+
+<body>
+    <div id="chart-container">
+        <h1>Top Administrative Regions</h1>
+        <div id="chart"></div>
+        <button id="transformButton">Transform to Line Chart</button>
+    </div>
+
+    <script>
+        const csvData = `name,adm1__id
+        "An Giang","1"
+        "Bạc Liêu","2"
+        "Bắc Giang","3"
+        "Bắc Kạn","4"
+        "Bắc Ninh","5"
+        "Bến Tre","6"
+        "Bà Rịa - Vũng Tàu","7"
+        "Bình Định","8"
+        "Bình Bình Dương","9"
+        "Bình Phước","10"
+        "Bình Thuận","11"
+        "Cần Thơ","12"
+        "Cà Mau","13"
+        "Cao Bằng","14"
+        "Đắk Lắk","15"
+        "Đắk Nông","16"
+        "Đồng Nai","17"
+        "Đồng Tháp","18"
+        "Đà Nẵng","19"
+        "Điện Biên","20"
+        "Gia Lai","21"
+        "Hải Dương","22"
+        "Hải Phòng","23"
+        "Hậu Giang","24"
+        "Hồ Chí Minh","25"
+        "Hà Giang","26"
+        "Hà Nội","27"
+        "Hà Nam","28"
+        "Hà Tĩnh","29"
+        "Hoà Bình","30"
+        "Hưng Yên","31"
+        "Khánh Hòa","32"
+        "Kiên Giang","33"
+        "Kon Tum","34"
+        "Lạng Sơn","35"
+        "Lai Châu","36"
+        "Lâm Đồng","37"
+        "Lào Cai","38"
+        "Long An","39"
+        "Nam Định","40"
+        "Nghệ An","41"
+        "Ninh Bình","42"
+        "Ninh Thuận","43"
+        "Phú Thọ","44"
+        "Phú Yên","45"
+        "Quảng Bình","46"
+        "Quảng Nam","47"
+        "Quảng Ngãi","48"
+        "Quảng Ninh","49"
+        "Quảng Trị","50"
+        "Sóc Trăng","51"
+        "Sơn La","52"
+        "Tây Ninh","53"
+        "Thừa Thiên Huế","54"
+        "Thái Bình","55"
+        "Thái Nguyên","56"
+        "Thanh Hóa","57"
+        "Tiền Giang","58"
+        "Trà Vinh","59"
+        "Tuyên Quang","60"
+        "Vĩnh Long","61"
+        "Vĩnh Phúc","62"
+        "Yên Bái","63"`;
+
+        console.log(name);
+        // Split the CSV data into lines
+        const lines = csvData.split('\n');
+
+        // Extract headers (first line)
+        const headers = lines[0].split(',');
+
+        // Initialize the data array
+        const data = [];
+
+        // Process each line (excluding the header) and create objects
+        for (let i = 1; i < lines.length; i++) {
+            const values = lines[i].split(',');
+
+            // Create an object with header-value pairs
+            const obj = {};
+            for (let j = 0; j < headers.length; j++) {
+                obj[headers[j]] = values[j].replace(/"/g, ''); // Remove double quotes
+            }
+
+            // Add the object to the data array
+            data.push(obj);
+        }
+
+        console.log(data.find(dataIn => dataIn.name));
+
+        let isPieChart = true; // Flag to track chart type
+        let topAdmins; // Variable to store top administrators
+
+        // Load the metadata file
+
+        d3.csv("adm1_metadata.csv").then(function (metadata) {
+
+            // Load the main data file
+            d3.csv("data1.csv").then(function (data) {
+                const adminCounts = {};
+
+                // Merge datasets based on the common key (adm1)
+                // Merge datasets based on the common key (adm1)
+                const mergedData = data.map(item => {
+                    // Find the corresponding metadata item based on adm1_id
+                    const metadataItem = metadata.find(meta => meta.adm1_id === item.adm1);
+
+                    // Check if metadataItem exists and has a valid name
+                    const name = metadataItem ? metadataItem.name : "Unknown";
+
+                    return { ...item, name: name };
+                });
+
+                mergedData.forEach(item => {
+                    const adminName = item.adm1;
+
+                    if (adminCounts[adminName]) {
+                        adminCounts[adminName]++;
+                    } else {
+                        adminCounts[adminName] = 1;
+                    }
+                });
+
+
+                // Convert adminCounts to an array of objects for sorting
+                const adminCountsArray = Object.keys(adminCounts).map(adminName => ({
+                    name: adminName,
+                    count: adminCounts[adminName]
+                }));
+
+                // Sort the array by count in descending order
+                adminCountsArray.sort((a, b) => b.count - a.count);
+
+                // Retrieve the top N admins (e.g., top 10)
+                const topN = 10; // You can change this number to get a different number of top admins
+                topAdmins = adminCountsArray.slice(0, topN);
+
+                // Calculate the total count of all top admins
+                const totalAdminCount = d3.sum(topAdmins, d => d.count);
+
+                // Create an SVG for the chart
+                const svg = d3.select("#chart").append("svg")
+                    .attr("width", 400)
+                    .attr("height", 400);
+
+                // Set the pie layout
+                const pie = d3.pie().value(d => d.count);
+
+                // Create an arc generator for the pie
+                const pieArc = d3.arc()
+                    .innerRadius(0)
+                    .outerRadius(200);
+
+                // Calculate the pie data
+                const pieData = pie(topAdmins);
+
+                // Create the pie chart
+                const pieChart = svg.append("g")
+                    .attr("transform", "translate(200,200)");
+
+                // Create pie slices
+                const pieSlices = pieChart.selectAll(".slice")
+                    .data(pieData)
+                    .enter()
+                    .append("g")
+                    .attr("class", "slice");
+
+                pieSlices.append("path")
+                    .attr("d", pieArc)
+                    .attr("fill", (d, i) => {
+                        const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
+                        return colorScale(i);
+                    });
+
+                // Add percentage and name labels to pie chart
+                pieSlices.append("text")
+                    .attr("transform", d => `translate(${pieArc.centroid(d)})`)
+                    .attr("dy", "0.35em")
+                    .attr("text-anchor", "middle")
+                    .text(d => `${d.data.name} (${((d.data.count / totalAdminCount) * 100).toFixed(2)}%)`);
+
+                // Button click event to toggle chart type
+                const transformButton = document.getElementById("transformButton");
+                transformButton.addEventListener("click", () => {
+                    if (isPieChart) {
+                        // Remove the pie chart
+                        pieChart.remove();
+
+                        // Call a function to create a line chart
+                        createLineChart(topAdmins, totalAdminCount);
+                    } else {
+                        // Remove the line chart
+                        lineChart.remove();
+
+                        // Recreate the pie chart
+                        createPieChart(topAdmins, totalAdminCount);
+                    }
+
+                    isPieChart = !isPieChart; // Toggle the flag
+                });
+            });
+        });
+
+        // Function to create a pie chart
+        function createPieChart(data, total) {
+            // Remove the existing chart (if any)
+            d3.select("svg").remove();
+
+            // Create an SVG for the pie chart
+            const svg = d3.select("#chart").append("svg")
+                .attr("width", 400)
+                .attr("height", 400);
+
+            // Create a group for the pie chart
+            const pieChart = svg.append("g")
+                .attr("transform", "translate(200,200)");
+
+            // Set up a color scale for the pie slices
+            const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
+
+            // Set up the pie layout
+            const pie = d3.pie().value(d => d.count);
+
+            // Create an arc generator for the pie
+            const pieArc = d3.arc()
+                .innerRadius(0)
+                .outerRadius(200);
+
+            // Calculate the pie data
+            const pieData = pie(data);
+
+            // Create pie slices
+            const pieSlices = pieChart.selectAll(".slice")
+                .data(pieData)
+                .enter()
+                .append("g")
+                .attr("class", "slice");
+
+            // Add transitions for pie slices
+            pieSlices.transition()
+                .duration(1000)
+                .attrTween("d", function (d) {
+                    const interpolate = d3.interpolate({ startAngle: 0, endAngle: 0 }, d);
+                    return function (t) {
+                        return pieArc(interpolate(t));
+                    };
+                });
+
+            pieSlices.append("path")
+                .attr("d", pieArc)
+                .attr("fill", (d, i) => colorScale(i));
+
+            // Add percentage and name labels to pie chart with transitions
+            pieSlices.append("text")
+                .attr("transform", d => `translate(${pieArc.centroid(d)})`)
+                .attr("dy", "0.35em")
+                .attr("text-anchor", "middle")
+                .text(d => `${d.data.name} (${((d.data.count / total) * 100).toFixed(2)}%)`)
+                .style("opacity", 0) // Set initial opacity to 0
+                .transition()
+                .delay(800) // Delay the transition
+                .style("opacity", 1); // Fade in the labels
+
+            // Update the button text
+            document.getElementById("transformButton").innerText = "Transform to Line Chart";
+        }
+
+        // Function to create a line chart with transitions and improved UI
+        function createLineChart(data, total) {
+            // Remove the existing chart (if any)
+            d3.select("svg").remove();
+
+            // Create an SVG for the line chart
+            const svg = d3.select("#chart").append("svg")
+                .attr("width", 400)
+                .attr("height", 400);
+
+            // Define dimensions and margins
+            const margin = { top: 20, right: 20, bottom: 30, left: 40 };
+            const width = 400 - margin.left - margin.right;
+            const height = 400 - margin.top - margin.bottom;
+
+            // Create a group for the line chart
+            const lineChart = svg.append("g")
+                .attr("transform", `translate(${margin.left},${margin.top})`);
+
+            // Set up scales for the line chart
+            const xScale = d3.scaleBand()
+                .domain(data.map(d => d.name))
+                .range([0, width])
+                .padding(0.1);
+
+            const yScale = d3.scaleLinear()
+                .domain([0, d3.max(data, d => d.count)])
+                .range([height, 0]);
+
+            // Create the x and y axes
+            lineChart.append("g")
+                .attr("transform", `translate(0,${height})`)
+                .call(d3.axisBottom(xScale));
+
+            lineChart.append("g")
+                .call(d3.axisLeft(yScale));
+
+            // Create bars with transitions
+            const bars = lineChart.selectAll(".bar")
+                .data(data)
+                .enter()
+                .append("rect")
+                .attr("class", "bar")
+                .attr("x", d => xScale(d.name))
+                .attr("y", height)
+                .attr("width", xScale.bandwidth())
+                .attr("height", 0)
+                .attr("fill", (d, i) => colorScale(i))
+                .transition()
+                .duration(1000)
+                .attr("y", d => yScale(d.count))
+                .attr("height", d => height - yScale(d.count));
+
+            // Add labels to the bars with transitions
+            lineChart.selectAll(".label")
+                .data(data)
+                .enter()
+                .append("text")
+                .attr("class", "label")
+                .attr("x", d => xScale(d.name) + xScale.bandwidth() / 2)
+                .attr("y", height)
+                .attr("text-anchor", "middle")
+                .text(d => d.count)
+                .transition()
+                .duration(1000)
+                .attr("y", d => yScale(d.count) - 10);
+
+            // Update the button text
+            document.getElementById("transformButton").innerText = "Transform to Pie Chart";
+        }
+    </script>
+</body>
+
+</html>
