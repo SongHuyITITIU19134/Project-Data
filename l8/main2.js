@@ -1,80 +1,93 @@
-d3.queue().defer(d3.json, "https://raw.githubusercontent.com/TungTh/tungth.github.io/master/data/vn-provinces.json")
-    .defer(d3.csv, "vn-provinces-data.csv", function(d) {
-        return {
-            ma: +d['ma'],
-            name: d['province'],
-            population: parseFloat(d['population']),
-            gdp: parseFloat(d['GRDP-USD'])
-        }
-    })
-    .await(draw)
+d3.queue()
+  .defer(
+    d3.json,
+    "https://raw.githubusercontent.com/TungTh/tungth.github.io/master/data/vn-provinces.json"
+  )
+  .defer(d3.csv, "vnData.csv", function (d) {
+   
+    return {
+      province: d["Province"],
+      treeLost: parseInt(d["Tree Lost"]),
+      co2: parseInt(d["Co2"]),
+    };
+  })
+  .await(draw);
+const w = 2000;
+const h = 2000;
+const p = 50;
 
-const w = 2000
-const h = 2000
-const p = 50
+var svg = d3.select("#map").append("svg").attr("width", w).attr("height", h);
 
-var svg = d3.select("#map").append("svg").attr("width", w).attr("height", h)
+var projection = d3
+  .geoMercator()
+  .translate([w / 3000000000, h / 6])
+  .scale(800);
 
-var projection = d3.geoMercator().translate([w / 30000000, h / 6]).scale(800)
+var path = d3.geoPath().projection(projection);
 
-var path = d3.geoPath().projection(projection)
-
-var color = d3.scaleQuantize()
-    .range([
-        "rgb(254,229,217)",
-        "rgb(252,187,161)",
-        "rgb(252,146,114)",
-        "rgb(251,106,74)",
-        "rgb(239,59,44)",
-        "rgb(203,24,29)",
-        "rgb(165,15,21)"
-    ]);
-
-
+var color = d3
+  .scaleQuantize()
+  .range([
+    "rgb(199,233,192)",
+    "rgb(161,217,155)",
+    "rgb(116,196,118)",
+    "rgb(65,171,93)",
+    "rgb(35,139,69)",
+    "rgb(0,109,44)",
+    "rgb(0,90,50)",
+  ]);
 
 function draw(err, datamap, dataset) {
 
-    console.log(datamap.features)
-        // console.log(dataset)
-
-    // synchronous to map
-    for (let i = 0; i < dataset.length; i++) {
-        var ma = dataset[i].ma
-        var name = dataset[i].name
-        var pop = dataset[i].population
-        for (let j = 0; j < datamap.features.length; j++) {
-            var ma2 = datamap.features[j].properties.Ma
-            if (ma == ma2) {
-                // console.log("matched")
-                datamap.features[j].properties.value = pop
-                break
-            }
-        }
-    }
-
-    color.domain([d3.min(dataset, d => d.population), d3.max(dataset, d => d.population)])
-
-    svg.selectAll(".population").data(datamap.features)
-        .enter().append("path")
-        .attr("class", "population")
-        .attr("d", path)
-        .attr("fill", (d) => {
-            var pop = d.properties.value
-            if (pop >= 0) return color(pop * 1.5)
-            return "steelblue"
-        })
-        .on("mouseover", function(d) {
-            d3.select("#value").text(d.properties.Name)
-            d3.select("#value2").text(`${d.properties.value * 1000} people`)
-
-            d3.select("#tooltip")
-                .style("left", 1300 + "px")
-                .style("visibility", "visible")
-        })
-        .on("mouseout", function(d) {
-            d3.select("#tooltip").style("visibility", "hidden")
-        })
+  console.log(datamap);
 
 
+  var treeLostDataByProvince = {};
+  dataset.forEach(function (d) {
+    treeLostDataByProvince[d.province] = d.treeLost;
+  });
 
+  datamap.features.forEach(function (feature) {
+    var name = feature.properties.Name;
+    feature.properties.treeLost = treeLostDataByProvince[name] || 0;
+  });
+
+  color.domain([
+    d3.min(dataset, function (d) {
+      return d.treeLost;
+    }),
+    d3.max(dataset, function (d) {
+      return d.treeLost;
+    }),
+  ]);
+
+  console.log(datamap.features);
+
+  svg
+    .selectAll(".province")
+    .data(datamap.features)
+    .enter()
+    .append("path")
+    .attr("class", "province")
+    .attr("d", path)
+    .attr("fill", function (d) {
+      //Get data value
+      var name = d.properties.Name;
+      var value = d.properties.treeLost;
+      console.log(value);
+      if (value >= 0) return color(value * 5);
+      else return "steelblue";
+    })
+    .on("mouseover", function (d) {
+      d3.select("#value").text(d.properties.Name);
+      d3.select("#value2").text("Case  treeLost: " + d.properties.treeLost);
+
+      d3.select("#tooltip")
+        .transition()
+        .style("visibility", "visible")
+        .style("left", 1300 + "px");
+    })
+    .on("mouseout", function (d) {
+      d3.select("#tooltip").transition().style("visibility", "hidden");
+    });
 }

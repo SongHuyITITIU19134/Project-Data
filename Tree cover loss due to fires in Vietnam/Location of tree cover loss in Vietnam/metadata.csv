@@ -1,0 +1,10 @@
+title,Location of tree cover loss in Vietnam
+threshold,30
+extent_year,2000
+unit,ha
+page_size,5
+start_year,2001
+end_year,2022
+date_downloaded,2024-01-06
+metadata,https://api.resourcewatch.org/v1/gfw-metadata/widget_tree_cover_loss_location
+link,https://www.globalforestwatch.org/dashboards/country/VNM/?location=WyJjb3VudHJ5IiwiVk5NIl0%3D

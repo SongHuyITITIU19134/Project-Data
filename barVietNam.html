@@ -1,72 +1,198 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Yearly Average Counts</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            text-align: center;
+            margin: 10px 0;
+        }
+
+        nav {
+            background-color: #333;
+        }
+
+        nav ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        nav li {
+            float: left;
+        }
+
+        nav a {
+            display: block;
+            color: white;
+            text-align: center;
+            padding: 14px 16px;
+            text-decoration: none;
+        }
+
+        nav a:hover {
+            background-color: #ddd;
+            color: black;
+        }
+
+        #chart {
+            margin: 20px auto;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        .tooltip {
+            position: absolute;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            padding: 10px;
+            display: none;
+            font-size: 14px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+        }
+
+        .bar {
+            fill: steelblue;
+            transition: fill 0.3s ease-in-out;
+        }
+
+        .bar:hover {
+            fill: #4caf50;
+        }
+
+        .axis text {
+            font-size: 12px;
+            fill: #555;
+        }
+
+        .axis path,
+        .axis line {
+            fill: none;
+            stroke: #ddd;
+            shape-rendering: crispEdges;
+        }
+
+        text {
+            fill: #555;
+        }
+    </style>
 </head>
+
 <body>
-    <h1>Bar Data in Viet Nam </h1>
-    <h2>TREE COVER LOSS DUE TO FIRES IN VIETNAM
-        From 2001 to 2022</h2>
+    <nav>
+        <ul>
+            <li><a href="./index/index.html">Home</a></li>
+            <li><a href="./circleChartVn.html">Circle Chart VN</a></li>
+        
+        </ul>
+    </nav>
+    <header>
+        <h1>Bar Data in Viet Nam</h1>
+        <h2>TREE COVER LOSS DUE TO FIRES IN VIETNAM From 2012 to 2023</h2>
+    </header>
+
+ 
     <div id="chart"></div>
+    <div class="tooltip" id="tooltip"></div>
 
     <script>
-        d3.csv("viirs_fire_alerts__count.csv").then(function (data) {
-            const averageCountsByYear = d3.rollup(data, v => d3.mean(v, d => +d.alert__count), d => d.alert__year);
+        document.addEventListener("DOMContentLoaded", function () {
+            d3.csv("viirs_fire_alerts__count.csv").then(function (data) {
+                const averageCountsByYear = d3.rollup(data, v => d3.mean(v, d => +d.alert__count), d => d.alert__year);
 
-            const years = Array.from(averageCountsByYear.keys());
-            const averageCounts = Array.from(averageCountsByYear.values());
+                const years = Array.from(averageCountsByYear.keys());
+                const averageCounts = Array.from(averageCountsByYear.values());
 
-            const margin = { top: 20, right: 30, bottom: 30, left: 40 };
-            const width = 800 - margin.left - margin.right;
-            const height = 400 - margin.top - margin.bottom;
+                const margin = { top: 20, right: 30, bottom: 60, left: 60 };
+                const width = 800 - margin.left - margin.right;
+                const height = 400 - margin.top - margin.bottom;
 
-            const svg = d3.select("#chart").append("svg")
-                .attr("width", width + margin.left + margin.right)
-                .attr("height", height + margin.top + margin.bottom)
-                .append("g")
-                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+                const svg = d3.select("#chart").append("svg")
+                    .attr("width", width + margin.left + margin.right)
+                    .attr("height", height + margin.top + margin.bottom)
+                    .append("g")
+                    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-            const xScale = d3.scaleBand()
-                .domain(years)
-                .range([0, width])
-                .padding(0.1);
+                const xScale = d3.scaleBand()
+                    .domain(years)
+                    .range([0, width])
+                    .padding(0.1);
 
-            const yScale = d3.scaleLinear()
-                .domain([0, d3.max(averageCounts)])
-                .nice()
-                .range([height, 0]);
+                const yScale = d3.scaleLinear()
+                    .domain([0, d3.max(averageCounts)])
+                    .nice()
+                    .range([height, 0]);
 
-            svg.selectAll("rect")
+                const tooltip = d3.select("#tooltip");
+
+                const bars = svg.selectAll(".bar")
                 .data(averageCounts)
                 .enter()
                 .append("rect")
+                .attr("class", "bar")
                 .attr("x", (d, i) => xScale(years[i]))
-                .attr("y", d => yScale(d))
+                .attr("y", height) // Start the bars from the bottom of the chart
                 .attr("width", xScale.bandwidth())
-                .attr("height", d => height - yScale(d))
-                .attr("fill", "steelblue");
+                .attr("height", 0) // Initially set the height to 0
+                .on("mouseover", handleMouseOver)
+                .on("mouseout", handleMouseOut)
+                .transition() // Add transition for growing effect
+                .duration(800) // Set the duration of the transition
+                .attr("y", d => yScale(d)) // Final y-position for the bars
+                .attr("height", d => height - yScale(d)); // Final height for the bars
+            
+                function handleMouseOver(event, d, i) {
+                    d3.select(this).attr("fill", "#4caf50");
+                    tooltip.style("display", "block")
+                        .html(`Average Count: ${d.toFixed(2)}`)
+                        .style("left", event.pageX + 10 + "px")
+                        .style("top", event.pageY - 10 + "px");
+                }
 
-            svg.append("g")
-                .attr("transform", "translate(0," + height + ")")
-                .call(d3.axisBottom(xScale));
+                function handleMouseOut() {
+                    d3.select(this).attr("fill", "steelblue");
+                    tooltip.style("display", "none");
+                }
 
-            svg.append("g")
-                .call(d3.axisLeft(yScale));
+                svg.append("g")
+                    .attr("transform", "translate(0," + height + ")")
+                    .call(d3.axisBottom(xScale))
+                    .selectAll("text")
+                    .attr("transform", "rotate(0)")
+                    .attr("text-anchor", "end");
 
-            svg.append("text")
-                .attr("x", width / 2)
-                .attr("y", height + margin.top + 20)
-                .attr("text-anchor", "middle")
-                .text("Year");
+                svg.append("g")
+                    .call(d3.axisLeft(yScale));
 
-            svg.append("text")
-                .attr("x", -margin.top)
-                .attr("y", -margin.left)
-                .attr("text-anchor", "middle")
-                .attr("transform", "rotate(-90)")
-                .text("Average Count");
+                svg.append("text")
+                    .attr("x", width / 2)
+                    .attr("y", height + margin.top + 40)
+                    .attr("text-anchor", "middle")
+                    .text("Year");
+
+                svg.append("text")
+                    .attr("x", -margin.top)
+                    .attr("y", -margin.left)
+                    .attr("text-anchor", "middle")
+                    .attr("transform", "rotate(-90)")
+                    .text("Average Count");
+            });
         });
     </script>
 </body>
+
 </html>

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pie Chart with Hover</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+        }
+
+        nav {
+            background-color: #333;
+        }
+
+        nav ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        nav li {
+            float: left;
+        }
+
+        nav a {
+            display: block;
+            color: white;
+            text-align: center;
+            padding: 14px 16px;
+            text-decoration: none;
+        }
+
+        nav a:hover {
+            background-color: #ddd;
+            color: black;
+        }
+
+        #chart-container {
+            text-align: center;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .arc {
+            cursor: pointer;
+            transition: transform 0.2s, fill 0.3s ease-in-out;
+        }
+
+        .arc:hover {
+            transform: scale(1.1);
+        }
+
+        .tooltip {
+            position: absolute;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            padding: 10px;
+            font-size: 14px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+            display: none;
+        }
+    </style>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+
+<body>
+    <nav>
+        <ul>
+            <li><a href="./index/index.html">Home</a></li>
+        </ul>
+    </nav>
+    <div id="chart-container">
+        <h1 style="color: #333;">Simple Pie Chart</h1>
+        <div id="chart"></div>
+        <div class="tooltip" id="tooltip"></div>
+    </div>
+
+    <script>
+        const csvData = `"year","tree_cover_loss_from_fires"
+        2001,738
+        2002,554
+        2003,828
+        2004,1162
+        2005,1483
+        2006,1248
+        2007,1273
+        2008,1063
+        2009,1135
+        2010,2603
+        2011,1237
+        2012,1987
+        2013,660
+        2014,1457
+        2015,1277
+        2016,3269
+        2017,1860
+        2018,1565
+        2019,2119
+        2020,2015
+        2021,1954
+        2022,1215
+        `;
+
+        // Split the CSV data into lines
+        const lines = csvData.split('\n');
+
+        // Extract headers (first line)
+        const headers = lines[0].split(',');
+
+        // Initialize the data arrays
+        const years = [];
+        const data = [];
+
+        for (let i = 1; i < lines.length; i++) {
+            const values = lines[i].split(',');
+            years.push(parseInt(values[0], 10));
+            data.push(parseInt(values[1], 10));
+        }
+
+        // Create an SVG for the chart
+        const svg = d3.select("#chart").append("svg")
+            .attr("width", 400)
+            .attr("height", 400)
+            .append("g")
+            .attr("transform", "translate(200,200)");
+
+        // Create a color scale
+        const color = d3.scaleSequential(d3.interpolateOranges).domain([d3.min(data), d3.max(data)]);
+
+        // Create a pie chart function
+        const pie = d3.pie();
+
+
+
+        const arc = d3.arc()
+            .innerRadius(0)
+            .outerRadius(100);
+        // Combine data and years into an array of objects
+        const combinedData = data.map((value, index) => ({ year: years[index], value }));
+
+        // Create a pie chart layout using combinedData
+        const pieGenerator = d3.pie().value(d => d.value);
+        const pieData = pieGenerator(combinedData);
+        // Generate the pie chart segments
+        const arcs = svg.selectAll(".arc")
+            .data(pieData)
+            .enter()
+            .append("path")
+            .attr("class", "arc")
+            .attr("d", arc)
+            .attr("fill", d => color(d.data.value));
+
+        // Add hover effect
+        arcs.on("mouseover", function (event, d, _, i) {
+            const percentage = (d.data.value / d3.sum(data)) * 100;
+            const tooltipContent = `Year: ${d.data.year}<br>Value: ${d.data.value}<br>Percentage: ${percentage.toFixed(2)}%`;
+            d3.select(this)
+                .transition()
+                .duration(200)
+                .attr("transform", "scale(1.1)");
+            // Display tooltip
+            d3.select("#tooltip")
+                .html(tooltipContent)
+                .style("left", (event.pageX + 10) + "px")
+                .style("top", (event.pageY - 10) + "px")
+                .style("display", "block");
+        });
+
+
+        arcs.on("mouseout", function () {
+            d3.select(this)
+                .transition()
+                .duration(200)
+                .attr("transform", "scale(1)");
+            // Hide tooltip
+            d3.select("#tooltip").style("display", "none");
+        });
+    </script>
+</body>
+
+</html>
