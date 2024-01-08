@@ -35,14 +35,46 @@
             pointer-events: all;
             /* This is essential for the brush to work */
         }
+        button {
+            background-color: steelblue;
+            /* Set the background to blue */
+            color: white;
+            /* Set the text color to white */
+            border: none;
+            /* Remove the default border */
+            padding: 10px 20px;
+            /* Add some padding */
+            text-align: center;
+            /* Center the text inside the button */
+            text-decoration: none;
+            /* Remove underline from text */
+            display: inline-block;
+            /* Allow to set margins */
+            font-size: 16px;
+            /* Increase font size */
+            margin: 4px 2px;
+            /* Add some margin around the buttons */
+            cursor: pointer;
+            /* Change mouse cursor to pointer on hover */
+            border-radius: 4px;
+            /* Optional: rounds the corners */
+        }
+        /* Optionally: change the style when the user hovers over the button */
+        
+        button:hover {
+            background-color: darkblue;
+            /* Make button darker when hovered over */
+        }
     </style>
 </head>
 
 <body>
-    <button id="add">Add</button>
-    <button id="remove">Remove</button>
-    <button id="sort">Sort order</button>
     <h2>No. of wildfires in US by Bar Chart</h2>
+    <div style="margin-left: 30%;">
+        <button id="add">Add</button>
+        <button id="remove">Remove</button>
+        <button id="sort">Sort order</button>
+    </div>
     <div id="tool" class="hidden">
         <p><strong>Information</strong></p>
         <p><span id="value"></span></p>
