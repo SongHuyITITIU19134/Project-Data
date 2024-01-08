@@ -1,1 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <style>
+        rect:hover {
+            fill: steelblue;
+        }
+        
+        #tool {
+            position: absolute;
+            width: auto;
+            height: auto;
+            padding: 10px;
+            background-color: white;
+            -webkit-border-radius: 10px;
+            -moz-border-radius: 10px;
+            border-radius: 10px;
+            pointer-events: none;
+        }
+        
+        #tool .hidden {
+            display: none;
+        }
+        
+        .active {
+            fill: blue;
+        }
+        
+        button {
+            background-color: steelblue;
+            /* Set the background to blue */
+            color: white;
+            /* Set the text color to white */
+            border: none;
+            /* Remove the default border */
+            padding: 10px 20px;
+            /* Add some padding */
+            text-align: center;
+            /* Center the text inside the button */
+            text-decoration: none;
+            /* Remove underline from text */
+            display: inline-block;
+            /* Allow to set margins */
+            font-size: 16px;
+            /* Increase font size */
+            margin: 4px 2px;
+            /* Add some margin around the buttons */
+            cursor: pointer;
+            /* Change mouse cursor to pointer on hover */
+            border-radius: 4px;
+            /* Optional: rounds the corners */
+        }
+        /* Optionally: change the style when the user hovers over the button */
+        
+        button:hover {
+            background-color: darkblue;
+            /* Make button darker when hovered over */
+        }
+    </style>
+</head>
+
+<body>
+    <h2>Cost damage by wildfires in USA (1985 - 2020)</h2>
+    <div id="tool" class="hidden">
+        <p><span id="value"></span></p>
+        <p><span id="value2"></span></p>
+    </div>
+    <div style="margin-left: 30%;">
+        <button id="add">Add</button>
+        <button id="remove">Remove</button>
+        <button id="sort">Sort order</button>
+    </div>
+    <script src="main.js"></script>
+</body>
+
+</html>
